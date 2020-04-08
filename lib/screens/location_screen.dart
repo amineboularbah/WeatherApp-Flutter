@@ -1,30 +1,102 @@
+import 'package:clima/services/weather.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:clima/utilities/constants.dart';
 
-class LoadingScreen extends StatefulWidget {
+class LocationScreen extends StatefulWidget {
+  LocationScreen({this.locationWeather});
+  final locationWeather;
   @override
-  _LoadingScreenState createState() => _LoadingScreenState();
+  _LocationScreenState createState() => _LocationScreenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen> {
+class _LocationScreenState extends State<LocationScreen> {
+  WeatherModel weather = WeatherModel();
+  int tempature;
+  String weatherIcon;
+  String cityName;
+  String weatherMessage;
+
+  @override
+  void initState() {
+    updateUI(widget.locationWeather);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            getLocation();
-          },
-          child: Text('Get Location'),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/weather.jfif'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+                Colors.white.withOpacity(0.8), BlendMode.dstATop),
+          ),
+        ),
+        constraints: BoxConstraints.expand(),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  FlatButton(
+                    onPressed: () {},
+                    child: Icon(
+                      Icons.near_me,
+                      size: 50.0,
+                    ),
+                  ),
+                  FlatButton(
+                    onPressed: () {},
+                    child: Icon(
+                      Icons.location_city,
+                      size: 50.0,
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 15.0),
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      '$tempature',
+                      style: kTempTextStyle,
+                    ),
+                    Text(
+                      weatherIcon,
+                      style: kConditionTextStyle,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 15.0),
+                child: Text(
+                  weatherMessage + '\nin $cityName',
+                  textAlign: TextAlign.right,
+                  style: kMessageTextStyle,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void getLocation() async {
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
-    print(position);
+  void updateUI(dynamic weatherData) {
+    setState(() {
+      double temp = weatherData['main']['temp'];
+      tempature = temp.toInt();
+      var condition = weatherData['weather'][0]['id'];
+      cityName = weatherData['name'];
+      weatherIcon = weather.getWeatherIcon(condition);
+      weatherMessage = weather.getMessage(tempature);
+    });
   }
 }
